@@ -1,68 +1,60 @@
 import { getStockStatus } from "./inventoryUtils.js";
 
+const productList = document.getElementById("productList");
+const noResultsMessage = document.getElementById("noResultsMessage");
+const totalInventoryValue = document.getElementById("totalInventoryValue");
+const lowStockCount = document.getElementById("lowStockCount");
+const outOfStockCount = document.getElementById("outOfStockCount");
+
 export function displayProducts(products) {
-    const productList = document.getElementById("productList");
-    const noResultsMessage = document.getElementById("noResultsMessage");
+  productList.innerHTML = "";
 
-    productList.innerHTML = "";
+  if (products.length === 0) {
+    noResultsMessage.hidden = false;
+    return;
+  }
 
-    if (products.length === 0) {
-        noResultsMessage.style.display = "block";
-        return;
-    }
+  noResultsMessage.hidden = true;
 
-    noResultsMessage.style.display = "none";
+  products.forEach(({ id, name, category, price, stock }) => {
+    const status = getStockStatus(stock);
+    const statusClass = status.toLowerCase().replaceAll(" ", "-");
 
-    products.forEach(product => {
-        const {
-            id,
-            name,
-            category,
-            price,
-            stock
-        } = product;
+    const card = document.createElement("article");
 
-        const stockStatus = getStockStatus(stock);
+    card.className = "product-card";
+    card.dataset.id = id;
 
-        const productCard = document.createElement("article");
-        productCard.className = "product-card";
-        productCard.dataset.id = id;
+    card.innerHTML = `
+      <h3>${name}</h3>
 
-        let statusClass = "";
+      <p class="product-category">
+        ${category}
+      </p>
 
-        if (stockStatus === "In Stock") {
-            statusClass = "status-in-stock";
-        } else if (stockStatus === "Low Stock") {
-            statusClass = "status-low-stock";
-        } else {
-            statusClass = "status-out-of-stock";
-        }
+      <dl class="product-details">
+        <div>
+          <dt>Price</dt>
+          <dd>₱${price.toLocaleString()}</dd>
+        </div>
 
-        productCard.innerHTML = `
-            <h3>${name}</h3>
-            <p><strong>Category:</strong> ${category}</p>
-            <p><strong>Price:</strong> ₱${price.toLocaleString()}</p>
-            <p><strong>Stock:</strong> ${stock}</p>
-            <span class="stock-status ${statusClass}">
-                ${stockStatus}
-            </span>
-        `;
+        <div>
+          <dt>Stock</dt>
+          <dd>${stock}</dd>
+        </div>
+      </dl>
 
-        productList.appendChild(productCard);
-    });
+      <span class="stock-status ${statusClass}">
+        ${status}
+      </span>
+    `;
+
+    productList.appendChild(card);
+  });
 }
 
-export function displaySummary(
-    totalInventoryValue,
-    lowStockCount,
-    outOfStockCount
-) {
-    document.getElementById("totalInventoryValue").textContent =
-        `₱${totalInventoryValue.toLocaleString()}`;
-
-    document.getElementById("lowStockCount").textContent =
-        lowStockCount;
-
-    document.getElementById("outOfStockCount").textContent =
-        outOfStockCount;
+export function displaySummary(total, lowStock, outOfStock) {
+  totalInventoryValue.textContent = `₱${total.toLocaleString()}`;
+  lowStockCount.textContent = lowStock;
+  outOfStockCount.textContent = outOfStock;
 }
