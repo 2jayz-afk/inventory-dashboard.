@@ -1,16 +1,16 @@
 import { products } from "./products.js";
 
 import {
-    searchProducts,
-    filterProductsByCategory,
-    calculateTotalInventoryValue,
-    countLowStockProducts,
-    countOutOfStockProducts
+  searchProducts,
+  filterProductsByCategory,
+  calculateTotalInventoryValue,
+  countLowStockProducts,
+  countOutOfStockProducts
 } from "./inventoryUtils.js";
 
 import {
-    displayProducts,
-    displaySummary
+  displayProducts,
+  displaySummary
 } from "./display.js";
 
 const searchInput = document.getElementById("searchInput");
@@ -18,58 +18,41 @@ const categoryFilter = document.getElementById("categoryFilter");
 const searchBtn = document.getElementById("searchBtn");
 const resetBtn = document.getElementById("resetBtn");
 
-function updateDisplay() {
-    const query = searchInput.value;
-    const category = categoryFilter.value;
+function updateDashboard() {
+  const searchedProducts = searchProducts(
+    products,
+    searchInput.value
+  );
 
-    let filteredProducts = products;
+  const filteredProducts = filterProductsByCategory(
+    searchedProducts,
+    categoryFilter.value
+  );
 
-    if (query.trim() !== "") {
-        filteredProducts = searchProducts(filteredProducts, query);
-    }
+  displayProducts(filteredProducts);
 
-    filteredProducts = filterProductsByCategory(
-        filteredProducts,
-        category
-    );
-
-    displayProducts(filteredProducts);
+  displaySummary(
+    calculateTotalInventoryValue(products),
+    countLowStockProducts(products),
+    countOutOfStockProducts(products)
+  );
 }
 
-function initializeDashboard() {
-    displayProducts(products);
+searchBtn.addEventListener("click", updateDashboard);
 
-    const totalInventoryValue =
-        calculateTotalInventoryValue(products);
-
-    const lowStockCount =
-        countLowStockProducts(products);
-
-    const outOfStockCount =
-        countOutOfStockProducts(products);
-
-    displaySummary(
-        totalInventoryValue,
-        lowStockCount,
-        outOfStockCount
-    );
-}
-
-searchBtn.addEventListener("click", updateDisplay);
-
-categoryFilter.addEventListener("change", updateDisplay);
+categoryFilter.addEventListener("change", updateDashboard);
 
 searchInput.addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-        updateDisplay();
-    }
+  if (event.key === "Enter") {
+    updateDashboard();
+  }
 });
 
 resetBtn.addEventListener("click", () => {
-    searchInput.value = "";
-    categoryFilter.value = "All";
+  searchInput.value = "";
+  categoryFilter.value = "All";
 
-    displayProducts(products);
+  updateDashboard();
 });
 
-initializeDashboard();
+updateDashboard();
